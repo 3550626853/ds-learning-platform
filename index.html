@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构可视化学习平台</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">树</div>
+      <div class="brand-text">
+        <h1>数据结构可视化学习平台</h1>
+        <span>基于《数据结构——用面向对象方法与C++语言描述（第3版）》</span>
+      </div>
+    </div>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="searchInput" type="text" placeholder="搜索知识点，如：KMP、AVL、Dijkstra…" autocomplete="off">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+    <nav class="view-tabs">
+      <button class="view-tab active" data-view="tree" title="按章节层级浏览">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h6M9 6v6a3 3 0 003 3h6M15 15v-3M18 15h3"/></svg>
+        知识树
+      </button>
+      <button class="view-tab" data-view="graph" title="知识点网状关联图">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.2 7.5l3.3 8M16.8 7.5l-3.3 8"/></svg>
+        关联图谱
+      </button>
+      <button class="view-tab" data-view="category" title="按难度/重要性/类型筛选">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        分类学习
+      </button>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+      <!-- 树视图 -->
+      <div class="side-panel" id="panel-tree">
+        <div class="side-head">
+          <span>章节目录</span>
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span id="progressText">0/0</span>
+          </div>
+        </div>
+        <div class="tree" id="treeRoot"></div>
+      </div>
+      <!-- 图谱视图 -->
+      <div class="side-panel hidden" id="panel-graph">
+        <div class="side-head"><span>关系图例</span></div>
+        <div class="legend-group" id="relLegend"></div>
+        <div class="side-head"><span>章节筛选</span><button class="mini-btn" id="chSelectAll">全选</button></div>
+        <div class="legend-group chapters" id="chLegend"></div>
+        <div class="side-head"><span>选中节点</span></div>
+        <div class="graph-hint" id="graphHint">点击图中知识点节点查看详情；拖拽节点调整布局，滚轮缩放画布。</div>
+      </div>
+      <!-- 分类视图 -->
+      <div class="side-panel hidden" id="panel-category">
+        <div class="side-head"><span>按难度筛选</span></div>
+        <div class="chip-group" id="filterDiff"></div>
+        <div class="side-head"><span>按重要性筛选</span></div>
+        <div class="chip-group" id="filterImp"></div>
+        <div class="side-head"><span>按类型筛选</span></div>
+        <div class="chip-group" id="filterType"></div>
+        <div class="side-head"><span>按数据结构族</span></div>
+        <div class="chip-group" id="filterFamily"></div>
+        <div class="side-head"><span>按所属章节</span></div>
+        <div class="chip-group" id="filterCh"></div>
+        <div class="side-head"><span>按配套例题</span></div>
+        <div class="chip-group" id="filterEx"></div>
+        <div class="side-head"><span>学习建议</span></div>
+        <div class="study-tips">
+          <p>⭐ 核心 = 必考必会；重要 = 高频考点；拓展 = 加深理解。</p>
+          <p>建议先在「知识树」按章节建立框架，再用「分类学习」针对薄弱维度集中复习。</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 主区域 -->
+    <main class="main-area">
+      <!-- 概览/详情 -->
+      <section class="pane" id="pane-detail">
+        <div id="welcomeCard" class="welcome">
+          <div class="welcome-hero">
+            <h2>系统搭建你的数据结构知识框架</h2>
+            <p>本平台从教材提取知识点，构建「章节 — 模块 — 知识点」三级知识树与网状关联图，为核心知识点配备例题精讲，并内置 AI 学习助手。</p>
+            <div class="stat-row" id="statRow"></div>
+          </div>
+          <div class="chapter-cards" id="chapterCards"></div>
+        </div>
+        <div id="detailCard" class="detail hidden"></div>
+      </section>
+      <!-- 图谱 -->
+      <section class="pane hidden" id="pane-graph">
+        <div id="graphContainer"></div>
+        <div class="graph-detail hidden" id="graphDetail"></div>
+      </section>
+      <!-- 分类 -->
+      <section class="pane hidden" id="pane-category">
+        <div class="cat-toolbar"><span id="catCount"></span><button class="mini-btn" id="catReset">重置筛选</button></div>
+        <div class="card-grid" id="cardGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI 助手 -->
+  <button class="ai-fab" id="aiFab" title="AI 学习助手">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg>
+  </button>
+  <div class="ai-drawer" id="aiDrawer">
+    <div class="ai-head">
+      <div class="ai-title">
+        <span class="ai-avatar">AI</span>
+        <div>
+          <strong>AI 学习助手</strong>
+          <span class="ai-mode-badge">本地知识库问答</span>
+        </div>
+      </div>
+      <button class="ai-close" id="aiClose">✕</button>
+    </div>
+    <div class="ai-context" id="aiContext"></div>
+    <div class="ai-messages" id="aiMessages"></div>
+    <div class="ai-chips" id="aiChips"></div>
+    <div class="ai-input-row">
+      <input id="aiInput" type="text" placeholder="针对当前知识点提问，如：它的用途？怎么考？和XX的区别？">
+      <button id="aiSend">发送</button>
+    </div>
+  </div>
+
+  <script src="libs/echarts.min.js"></script>
+  <script src="js/kb-ch12.js"></script>
+  <script src="js/kb-ch34.js"></script>
+  <script src="js/kb-ch56.js"></script>
+  <script src="js/kb-ch78.js"></script>
+  <script src="js/kb-ch910.js"></script>
+  <script src="js/kb-extra.js"></script>
+  <script src="js/kb-code-examples.js"></script>
+  <script src="js/kb-detail.js"></script>
+  <script src="js/kb-detail2.js"></script>
+  <script src="js/kb-detail3.js"></script>
+  <script src="js/kb-detail4.js"></script>
+  <script src="js/kb-detail5.js"></script>
+  <script src="js/kb-examples.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
